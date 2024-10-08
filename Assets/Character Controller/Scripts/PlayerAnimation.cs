@@ -37,6 +37,7 @@ public class PlayerAnimation : MonoBehaviour
 
     private void Update() {
         UpdateAnimationState();
+        // Create update animation state for actions 
     }
 
     private void UpdateAnimationState() {

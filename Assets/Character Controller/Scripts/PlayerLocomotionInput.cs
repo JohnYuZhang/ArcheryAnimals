@@ -37,6 +37,7 @@ public class PlayerLocomotionInput : MonoBehaviour, PlayerControls.IPlayerLocomo
 
     #region Update
     private void LateUpdate() {
+        // Reset jump pressed at end of frame to avoid double jump
         JumpPressed = false;
     }
     #endregion
@@ -76,5 +77,5 @@ public class PlayerLocomotionInput : MonoBehaviour, PlayerControls.IPlayerLocomo
 
         WalkToggledOn = !WalkToggledOn;
     }
-    #endregion
+        #endregion
 }

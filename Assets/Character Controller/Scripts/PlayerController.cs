@@ -131,7 +131,6 @@ public class PlayerController : MonoBehaviour
         if (MathF.Abs(_verticalVelocity) > MathF.Abs(verticalTerminalVelocity)) {
             _verticalVelocity = -1f * Mathf.Abs(verticalTerminalVelocity);
         }
-        print(_verticalVelocity);
     }
     private void HandleLateralMovement() {
         // Create quick references for current state
