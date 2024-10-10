@@ -9,7 +9,7 @@ public class PlayerActionInput : MonoBehaviour, PlayerControls.IPlayerActionMapA
 
     #region Class Variables
     public PlayerControls PlayerControls { get; private set; }
-    public bool BowDrawn { get; private set; }
+    public bool DrawingBow { get; private set; }
     #endregion
 
     #region Startup
@@ -33,10 +33,10 @@ public class PlayerActionInput : MonoBehaviour, PlayerControls.IPlayerActionMapA
 
     public void OnDrawBow(InputAction.CallbackContext context) {
         if (context.performed) {
-            BowDrawn = true;
+            DrawingBow = true;
         } else if (context.canceled) {
             // Why does Bowdrawn = false on initial click then true? how does context.canceled work. This is ok behavior because you want bow draw to default to false until pressed.
-            BowDrawn = false;
+            DrawingBow = false;
         }
     }
     #endregion
