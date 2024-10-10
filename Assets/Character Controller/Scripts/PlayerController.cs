@@ -270,7 +270,7 @@ public class PlayerController : MonoBehaviour
     }
     private bool CanRun() {
         // Restrict running to only 45deg forward from the player
-        return _playerLocomotionInput.MovementInput.y >= Mathf.Abs(_playerLocomotionInput.MovementInput.x);
+        return (_playerLocomotionInput.MovementInput.y >= Mathf.Abs(_playerLocomotionInput.MovementInput.x) && _playerState.CurrentPlayerActionState != PlayerActionState.ChargingBow);
     }
     #endregion
 }
