@@ -77,7 +77,6 @@ public class PlayerController : MonoBehaviour
         HandleVerticalMovement();
         // Lateral movement needs to be last because it handles the move call
         HandleLateralMovement();
-
     }
 
     private void UpdateMovementState() {
