@@ -44,8 +44,6 @@ public class PlayerActionController : MonoBehaviour
     private void HandleAttackAction() {
         print(_playerState.CurrentPlayerActionState);
     }
-
-
-
     #endregion
+
 }
