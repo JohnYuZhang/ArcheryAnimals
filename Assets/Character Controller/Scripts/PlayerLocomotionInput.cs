@@ -1,3 +1,4 @@
+using Riptide;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,17 +7,22 @@ using UnityEngine.InputSystem;
 [DefaultExecutionOrder(-2)]
 public class PlayerLocomotionInput : MonoBehaviour, PlayerControls.IPlayerLocomotionMapActions
 {
-
     #region Class Variables
     [SerializeField] private bool holdToSprint = true;
 
+    public class PlayerLocomotionState
+    {
+        public Vector2 MovementInput { get; set; }
+        public Vector2 LookInput { get; set; }
+        public bool JumpPressed { get; set; }
+        public bool SprintToggledOn { get; set; }
+        public bool WalkToggledOn { get; set; }
+    }
+
+    public PlayerLocomotionState currentPlayerLocomotionState = new PlayerLocomotionState();
 
     public PlayerControls PlayerControls { get; private set; }
-    public Vector2 MovementInput { get; private set; }
-    public Vector2 LookInput { get; private set; }
-    public bool JumpPressed { get; private set; }
-    public bool SprintToggledOn { get; private set; }
-    public bool WalkToggledOn { get; private set; }
+    
     #endregion
 
     #region Startup
@@ -36,27 +42,28 @@ public class PlayerLocomotionInput : MonoBehaviour, PlayerControls.IPlayerLocomo
     #endregion
 
     #region Update
-    private void LateUpdate() {
-        JumpPressed = false;
+    public void OnTransientInputConsumed()
+    {
+        currentPlayerLocomotionState.JumpPressed = false;
     }
     #endregion
 
     #region Input Callbacks
     public void OnMovement(InputAction.CallbackContext context) {
-        MovementInput = context.ReadValue<Vector2>();
+        currentPlayerLocomotionState.MovementInput = context.ReadValue<Vector2>();
     }
 
     public void OnLook(InputAction.CallbackContext context) {
-        LookInput = context.ReadValue<Vector2>();
+        currentPlayerLocomotionState.LookInput = context.ReadValue<Vector2>();
     }
 
     // Review logic for toggle vs hold
     public void OnToggleSprint(InputAction.CallbackContext context) {
         if(context.performed) {
-            SprintToggledOn = holdToSprint || !SprintToggledOn;
+            currentPlayerLocomotionState.SprintToggledOn = holdToSprint || !currentPlayerLocomotionState.SprintToggledOn;
         }
         else if(context.canceled) {
-            SprintToggledOn = !holdToSprint && SprintToggledOn;
+            currentPlayerLocomotionState.SprintToggledOn = !holdToSprint && currentPlayerLocomotionState.SprintToggledOn;
         }
     }
 
@@ -65,7 +72,7 @@ public class PlayerLocomotionInput : MonoBehaviour, PlayerControls.IPlayerLocomo
             return;
         }
 
-        JumpPressed = true;
+        currentPlayerLocomotionState.JumpPressed = true;
     }
 
     public void OnToggleWalk(InputAction.CallbackContext context) {
@@ -74,7 +81,7 @@ public class PlayerLocomotionInput : MonoBehaviour, PlayerControls.IPlayerLocomo
             return;
         }
 
-        WalkToggledOn = !WalkToggledOn;
+        currentPlayerLocomotionState.WalkToggledOn = !currentPlayerLocomotionState.WalkToggledOn;
     }
     #endregion
 }

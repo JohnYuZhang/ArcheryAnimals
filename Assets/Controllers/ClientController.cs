@@ -25,6 +25,7 @@ public class ClientController : MonoBehaviour
         _client.Connected += DidConnect;
     }
 
+
     private void MessageReceived(object sender, MessageReceivedEventArgs e)
     {
         switch ((ServerToClientId) e.MessageId)
@@ -49,6 +50,9 @@ public class ClientController : MonoBehaviour
             case ServerToClientId.playerPosition:
                 var id1 = e.Message.GetUShort();
                 var position1 = e.Message.GetVector3();
+                var rotation1 = e.Message.GetQuaternion();
+                var blendValue = e.Message.GetVector3();
+                var playerAnimationState = e.Message.GetInt();
                 if (id1 == _client.Id)
                 {
                     // no-op for now because we're doing client movement
@@ -56,6 +60,8 @@ public class ClientController : MonoBehaviour
                 else if (_players.ContainsKey(id1))
                 {
                     _players[id1].transform.position = position1;
+                    _players[id1].transform.rotation = rotation1;
+                    _players[id1].ApplyPlayerAnimationState(blendValue, playerAnimationState);
                 }
                 break;
         }
@@ -74,9 +80,15 @@ public class ClientController : MonoBehaviour
         _client.Update();
         if (mainPlayer != null)
         {
-            var myPositionMessage = Message.Create(MessageSendMode.Reliable, ClientToServerId.position);
-            myPositionMessage = mainPlayer.AppendCurrentPosition(myPositionMessage);
-            _client.Send(myPositionMessage);
+            //var myPositionMessage = Message.Create(MessageSendMode.Reliable, ClientToServerId.position);
+            //myPositionMessage = mainPlayer.AppendCurrentPosition(myPositionMessage);
+            //_client.Send(myPositionMessage);
+
+            var myInputMessage = Message.Create(MessageSendMode.Unreliable, ClientToServerId.input); // todo, make this unreliable
+            var currentInputState = mainPlayer.GetCurrentInputState();
+            myInputMessage = currentInputState.AppendToMessage(myInputMessage);
+            _client.Send(myInputMessage);
+            mainPlayer.GetComponent<PlayerLocomotionInput>().OnTransientInputConsumed();
         }
 
     }

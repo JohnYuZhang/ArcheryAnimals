@@ -24,6 +24,13 @@ public class ServerController : MonoBehaviour
         _server.MessageReceived += MessageReceived;
     }
 
+    private void PlayerLeft(object sender, ServerDisconnectedEventArgs e)
+    {
+        var player = _players[e.Client.Id];
+        _players.Remove(e.Client.Id);
+        Destroy(player.gameObject);
+    }
+
     private void MessageReceived(object sender, MessageReceivedEventArgs e)
     {
         var id = e.FromConnection.Id;
@@ -34,15 +41,20 @@ public class ServerController : MonoBehaviour
                 var player = Player.InflatePlayer(PlayerPrefab, id, username);
                 foreach (Player existingPlayer in _players.Values)
                     // notify the new player of all the existing players in the lobby
-                    SendSpawn(id, player);
+                    SendSpawn(id, existingPlayer);
                 BroadcastSpawn(player);
                 _players.Add(id, player);
                 break;
             case ClientToServerId.position:
-                e.Message.GetUShort();
-                var position = e.Message.GetVector3();
-                var playerToMove = _players[id];
-                playerToMove.transform.position = position;
+                //e.Message.GetUShort();
+                //var position = e.Message.GetVector3();
+                //var playerToMove = _players[id];
+                //playerToMove.transform.position = position;
+                break;
+            case ClientToServerId.input:
+                var inputState = PlayerInputState.CreateFromMessage(e.Message);
+                var playerToMove2 = _players[id];
+                playerToMove2.ApplyPlayerInputState(inputState);
                 break;
         }
     }
@@ -61,9 +73,6 @@ public class ServerController : MonoBehaviour
         _server.SendToAll(message);
     }
 
-    private void PlayerLeft(object sender, ServerDisconnectedEventArgs e)
-    {
-    }
 
     // Update is called once per frame
     void Update()

@@ -15,4 +15,5 @@ public enum ClientToServerId : ushort
 {
     name = 1,
     position = 2,
+    input = 3,
 }

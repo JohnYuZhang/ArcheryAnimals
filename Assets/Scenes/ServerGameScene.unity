@@ -151,7 +151,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7a0dda7af85d6044fbc241e43026723a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  PlayerPrefab: {fileID: 6534542130733389426, guid: 2571f04e4624bd44c911d71291aaf7f2,
+  PlayerPrefab: {fileID: 7002102401930727352, guid: 34ebeb4e413428c4f8daf2f39a4b14ad,
     type: 3}
 --- !u!4 &222209401
 Transform:
@@ -311,7 +311,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 1}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0

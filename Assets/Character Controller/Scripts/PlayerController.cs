@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using static PlayerLocomotionInput;
 
 [DefaultExecutionOrder(-1)]
 public class PlayerController : MonoBehaviour
@@ -10,7 +11,8 @@ public class PlayerController : MonoBehaviour
     #region Class Variables
     [Header("Components")]
     [SerializeField] private CharacterController _characterController;
-    [SerializeField] private Camera _playerCamera;
+    [SerializeField] public Transform _playerCamera;
+    public bool isMainPlayer = true;
     public float RotationMismatch { get; private set; } = 0f;
     public bool IsRotatingToTarget { get; private set; } = false;
 
@@ -61,7 +63,10 @@ public class PlayerController : MonoBehaviour
 
     #region Startup
     private void Awake() {
-        _playerLocomotionInput = GetComponent<PlayerLocomotionInput>();
+        if (isMainPlayer)
+        {
+            _playerLocomotionInput = GetComponent<PlayerLocomotionInput>();
+        }
         _playerState = GetComponent<PlayerState>();
 
         _antiBump = sprintSpeed;
@@ -72,22 +77,26 @@ public class PlayerController : MonoBehaviour
 
     #region Update Logic
     private void Update() {
-        // Order matters
-        UpdateMovementState();
-        HandleVerticalMovement();
-        // Lateral movement needs to be last because it handles the move call
-        HandleLateralMovement();
-
+        if (isMainPlayer)
+        {
+            // Order matters
+            UpdateMovementState(_playerLocomotionInput.currentPlayerLocomotionState);
+            HandleVerticalMovement(_playerLocomotionInput.currentPlayerLocomotionState);
+            // Lateral movement needs to be last because it handles the move call
+            HandleLateralMovement(_playerLocomotionInput.currentPlayerLocomotionState);
+            // Camera logic is recomended to happen after movement because it tracks latest player position, makes the camera smoother and reduces jitter etc.
+            _playerCamera.rotation = GetCameraRotation(_playerLocomotionInput.currentPlayerLocomotionState);
+        }
     }
 
-    private void UpdateMovementState() {
+    public void UpdateMovementState(PlayerLocomotionState playerLocomotionState) {
         _lastMovementState = _playerState.CurrentPlayerMovementState;
 
-        bool canRun = CanRun();
-        bool isMovementInput = _playerLocomotionInput.MovementInput != Vector2.zero;
+        bool canRun = CanRun(playerLocomotionState);
+        bool isMovementInput = playerLocomotionState.MovementInput != Vector2.zero;
         bool isMovingLaterally = IsMovingLaterally();
-        bool isSprinting = _playerLocomotionInput.SprintToggledOn && isMovingLaterally;
-        bool isWalking = isMovingLaterally && (!canRun || _playerLocomotionInput.WalkToggledOn);
+        bool isSprinting = playerLocomotionState.SprintToggledOn && isMovingLaterally;
+        bool isWalking = isMovingLaterally && (!canRun || playerLocomotionState.WalkToggledOn);
         bool isGrounded = IsGrounded();
 
         PlayerMovementState lateralState = isWalking ? PlayerMovementState.Walking :
@@ -109,7 +118,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void HandleVerticalMovement() {
+    public void HandleVerticalMovement(PlayerLocomotionState playerLocomotionState) {
         bool isGrounded = _playerState.InGroundedState();
         _verticalVelocity -= gravity * Time.deltaTime;
 
@@ -118,7 +127,7 @@ public class PlayerController : MonoBehaviour
         }
 
         // Jumped
-        if(_playerLocomotionInput.JumpPressed && isGrounded) {
+        if(playerLocomotionState.JumpPressed && isGrounded) {
             _verticalVelocity += Mathf.Sqrt(jumpSpeed * 3 * gravity);
             _jumpedLastFrame = true;
         }
@@ -131,9 +140,8 @@ public class PlayerController : MonoBehaviour
         if (MathF.Abs(_verticalVelocity) > MathF.Abs(verticalTerminalVelocity)) {
             _verticalVelocity = -1f * Mathf.Abs(verticalTerminalVelocity);
         }
-        print(_verticalVelocity);
     }
-    private void HandleLateralMovement() {
+    public void HandleLateralMovement(PlayerLocomotionState playerLocomotionState) {
         // Create quick references for current state
         bool isWalking = _playerState.CurrentPlayerMovementState == PlayerMovementState.Walking;
         bool isSprinting = _playerState.CurrentPlayerMovementState == PlayerMovementState.Sprinting;
@@ -148,9 +156,9 @@ public class PlayerController : MonoBehaviour
                                       isSprinting ? sprintSpeed : runSpeed;
         
         // Determine direction
-        Vector3 cameraForwardXZ = new Vector3(_playerCamera.transform.forward.x, 0f, _playerCamera.transform.forward.z).normalized;
-        Vector3 cameraRightXZ = new Vector3(_playerCamera.transform.right.x, 0f, _playerCamera.transform.right.z).normalized;
-        Vector3 movementDirection = cameraRightXZ * _playerLocomotionInput.MovementInput.x + cameraForwardXZ * _playerLocomotionInput.MovementInput.y;
+        Vector3 cameraForwardXZ = new Vector3(_playerCamera.forward.x, 0f, _playerCamera.forward.z).normalized;
+        Vector3 cameraRightXZ = new Vector3(_playerCamera.right.x, 0f, _playerCamera.right.z).normalized;
+        Vector3 movementDirection = cameraRightXZ * playerLocomotionState.MovementInput.x + cameraForwardXZ * playerLocomotionState.MovementInput.y;
 
         // Review time.deltatime?
         Vector3 movementDelta = movementDirection * lateralAcceleration * Time.deltaTime;
@@ -166,7 +174,6 @@ public class PlayerController : MonoBehaviour
         newVelocity = !isGrounded ? HandleSteepWalls(newVelocity) : newVelocity;
         // Move character (Unity suggests only calling .Move once per frame)
         _characterController.Move(newVelocity * Time.deltaTime);
-
     }
 
     private Vector3 HandleSteepWalls(Vector3 velocity) {
@@ -179,18 +186,14 @@ public class PlayerController : MonoBehaviour
 
         return velocity;
     }
-    // Camera logic is recomended to happen after movement because it tracks latest player position, makes the camera smoother and reduces jitter etc.
-    private void LateUpdate() {
-        UpdateCameraRotation();
-    }
 
-    private void UpdateCameraRotation() {
-        _cameraRotation.x += lookSenseH * _playerLocomotionInput.LookInput.x;
+    public Quaternion GetCameraRotation(PlayerLocomotionState playerLocomotionState) {
+        _cameraRotation.x += lookSenseH * playerLocomotionState.LookInput.x;
         // Subtracted because inverted camera for y
-        _cameraRotation.y = Mathf.Clamp(_cameraRotation.y - lookSenseV * _playerLocomotionInput.LookInput.y, -lookLimitV, lookLimitV);
+        _cameraRotation.y = Mathf.Clamp(_cameraRotation.y - lookSenseV * playerLocomotionState.LookInput.y, -lookLimitV, lookLimitV);
 
         // This is kinda strange cuz transform.eulerAngles.x is always 0 (euler shit is backwards on XY, Y is horizontal, X is vertical and Z is roll). Leaving in for now since it doesn't break anything but remove later after full implementation
-        _playerTargetRotation.x += transform.eulerAngles.x + lookSenseH * _playerLocomotionInput.LookInput.x;
+        _playerTargetRotation.x += transform.eulerAngles.x + lookSenseH * playerLocomotionState.LookInput.x;
 
 
         // Review Rotation code
@@ -207,14 +210,15 @@ public class PlayerController : MonoBehaviour
             UpdateIdleRotation(rotationTolerance);
         }
 
-        _playerCamera.transform.rotation = Quaternion.Euler(_cameraRotation.y, _cameraRotation.x, 0f);
+        var newRotation = Quaternion.Euler(_cameraRotation.y, _cameraRotation.x, 0f);
 
         // Get angle between camera and player
         // Review Linear Alg
-        Vector3 camForwardProjectedXZ = new Vector3(_playerCamera.transform.forward.x, 0f, _playerCamera.transform.forward.z).normalized;
+        Vector3 camForwardProjectedXZ = new Vector3(_playerCamera.transform.forward.x, 0f, _playerCamera.forward.z).normalized;
         Vector3 crossProduct = Vector3.Cross(transform.forward, camForwardProjectedXZ);
         float sign = Mathf.Sign(Vector3.Dot(crossProduct, transform.up));
-        RotationMismatch = sign * Vector3.Angle(transform.forward, camForwardProjectedXZ); 
+        RotationMismatch = sign * Vector3.Angle(transform.forward, camForwardProjectedXZ);
+        return newRotation;
     }
 
     private void UpdateIdleRotation(float rotationTolerance) {
@@ -264,9 +268,9 @@ public class PlayerController : MonoBehaviour
 
         return _characterController.isGrounded && validAngle;
     }
-    private bool CanRun() {
+    private bool CanRun(PlayerLocomotionState playerLocomotionState) {
         // Restrict running to only 45deg forward from the player
-        return _playerLocomotionInput.MovementInput.y >= Mathf.Abs(_playerLocomotionInput.MovementInput.x);
+        return playerLocomotionState.MovementInput.y >= Mathf.Abs(playerLocomotionState.MovementInput.x);
     }
     #endregion
 }
