@@ -101,7 +101,8 @@ public class PlayerController : MonoBehaviour
 
         PlayerMovementState lateralState = isWalking ? PlayerMovementState.Walking :
                                            isSprinting ? PlayerMovementState.Sprinting :
-                                           isMovingLaterally || isMovementInput ? PlayerMovementState.Running : PlayerMovementState.Idling;
+                                           isMovingLaterally || isMovementInput ? PlayerMovementState.Running : 
+                                           PlayerMovementState.Idling;
         _playerState.SetPlayerMovementState(lateralState);
 
         // Airborn State
@@ -176,6 +177,7 @@ public class PlayerController : MonoBehaviour
         _characterController.Move(newVelocity * Time.deltaTime);
     }
 
+    // Review this logic
     private Vector3 HandleSteepWalls(Vector3 velocity) {
         Vector3 normal = CharacterControllerUtils.GetNormalWithSphereCast(_characterController, _groundLayers);
         float angle = Vector3.Angle(normal, Vector3.up);
@@ -248,6 +250,8 @@ public class PlayerController : MonoBehaviour
         return lateralVelocity.magnitude > movingThreshold;
     }
 
+    // Possibly rework this logic or rename
+    // Need 2 different checks for grounded and air born to solve getting stuck on slanted walls
     private bool IsGrounded() {
         bool grounded = _playerState.InGroundedState() ? IsGroundedWhileGrounded() : IsGroundedWhileAirborn();
         return grounded;
@@ -261,6 +265,7 @@ public class PlayerController : MonoBehaviour
         return grounded;
     }
 
+    // Review logic for slope limit
     private bool IsGroundedWhileAirborn() {
         Vector3 normal = CharacterControllerUtils.GetNormalWithSphereCast(_characterController, _groundLayers);
         float angle = Vector3.Angle(normal, Vector3.up);
@@ -270,7 +275,7 @@ public class PlayerController : MonoBehaviour
     }
     private bool CanRun(PlayerLocomotionState playerLocomotionState) {
         // Restrict running to only 45deg forward from the player
-        return playerLocomotionState.MovementInput.y >= Mathf.Abs(playerLocomotionState.MovementInput.x);
+        return playerLocomotionState.MovementInput.y >= Mathf.Abs(playerLocomotionState.MovementInput.x)  && _playerState.CurrentPlayerActionState != PlayerActionState.ChargingBow;
     }
     #endregion
 }

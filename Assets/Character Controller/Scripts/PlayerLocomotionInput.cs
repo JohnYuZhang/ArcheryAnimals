@@ -83,5 +83,5 @@ public class PlayerLocomotionInput : MonoBehaviour, PlayerControls.IPlayerLocomo
 
         currentPlayerLocomotionState.WalkToggledOn = !currentPlayerLocomotionState.WalkToggledOn;
     }
-    #endregion
+        #endregion
 }
