@@ -48,11 +48,13 @@ public class ClientController : MonoBehaviour
                 _players.Add(id, player);
                 break;
             case ServerToClientId.playerPosition:
+                Debug.Log("lol man");
                 var id1 = e.Message.GetUShort();
                 var position1 = e.Message.GetVector3();
                 var rotation1 = e.Message.GetQuaternion();
                 var blendValue = e.Message.GetVector3();
                 var playerAnimationState = e.Message.GetInt();
+                var playerActionAnimationState = e.Message.GetInt();
                 if (id1 == _client.Id)
                 {
                     // no-op for now because we're doing client movement
@@ -61,7 +63,7 @@ public class ClientController : MonoBehaviour
                 {
                     _players[id1].transform.position = position1;
                     _players[id1].transform.rotation = rotation1;
-                    _players[id1].ApplyPlayerAnimationState(blendValue, playerAnimationState);
+                    _players[id1].ApplyPlayerAnimationState(blendValue, playerAnimationState, playerActionAnimationState);
                 }
                 break;
         }

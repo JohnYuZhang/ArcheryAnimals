@@ -8,6 +8,8 @@ public class Player : MonoBehaviour
     private PlayerController _playerController;
     private PlayerLocomotionInput _playerLocomotionInput;
     private PlayerAnimation _playerAnimation;
+    private PlayerActionInput _playerActionInput;
+    private PlayerActionController _playerActionController;
 
     public ushort Id { get; private set; }
     public string Username { get; private set; }
@@ -36,6 +38,7 @@ public class Player : MonoBehaviour
         message.AddQuaternion(transform.rotation);
         message.AddVector3(_playerAnimation._currentBlendInput);
         message.AddInt((int)_playerAnimation._playerState.CurrentPlayerMovementState);
+        message.AddInt((int)_playerAnimation._playerState.CurrentPlayerActionState);
         return message;
     }
 
@@ -49,6 +52,7 @@ public class Player : MonoBehaviour
             _playerController.HandleVerticalMovement(playerInputState);
             // Lateral movement needs to be last because it handles the move call
             _playerController.HandleLateralMovement(playerInputState);
+            _playerActionController.UpdateActionState(playerInputState.DrawingBow);
             _playerController._playerCamera.rotation = playerInputState.CameraRotation;
             _playerController.transform.rotation = playerInputState.PlayerRotation;
             _playerAnimation.CalculateBlendValue(playerInputState.MovementInput);
@@ -56,9 +60,10 @@ public class Player : MonoBehaviour
         }
     }
 
-    public void ApplyPlayerAnimationState(Vector3 blendValue, int playerAnimationState)
+    public void ApplyPlayerAnimationState(Vector3 blendValue, int playerAnimationState, int playerActionAnimationState)
     {
-        _playerAnimation._playerState.SetPlayerMovementState((PlayerMovementState)playerAnimationState);
+        _playerAnimation._playerState.SetPlayerMovementState((PlayerMovementState) playerAnimationState);
+        _playerAnimation._playerState.SetPlayerActionState((PlayerActionState) playerActionAnimationState);
         _playerAnimation._currentBlendInput = blendValue;
         _playerAnimation.UpdateAnimationState();
     }
@@ -74,6 +79,7 @@ public class Player : MonoBehaviour
             SprintToggledOn = _playerLocomotionInput.currentPlayerLocomotionState.SprintToggledOn,
             WalkToggledOn = _playerLocomotionInput.currentPlayerLocomotionState.WalkToggledOn,
             PlayerRotation = _playerController.transform.rotation,
+            DrawingBow = _playerActionInput.DrawingBow,
         };
     }
 
@@ -82,6 +88,8 @@ public class Player : MonoBehaviour
         _playerController = GetComponent<PlayerController>();
         _playerLocomotionInput = GetComponent<PlayerLocomotionInput>();
         _playerAnimation = GetComponent<PlayerAnimation>();
+        _playerActionInput = GetComponent<PlayerActionInput>();
+        _playerActionController = GetComponent<PlayerActionController>();
     }
 
     void Start()

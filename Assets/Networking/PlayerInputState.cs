@@ -6,6 +6,7 @@ public class PlayerInputState : PlayerLocomotionState
 {
     public Quaternion CameraRotation { get; set; }
     public Quaternion PlayerRotation { get; set; }
+    public bool DrawingBow { get; set; }
 
     public Message AppendToMessage(Message message)
     {
@@ -16,6 +17,7 @@ public class PlayerInputState : PlayerLocomotionState
         message.AddBool(SprintToggledOn);
         message.AddBool(JumpPressed);
         message.AddBool(WalkToggledOn);
+        message.AddBool(DrawingBow);
         return message;
     }
 
@@ -29,6 +31,7 @@ public class PlayerInputState : PlayerLocomotionState
         playerInputState.SprintToggledOn = message.GetBool();
         playerInputState.JumpPressed = message.GetBool();
         playerInputState.WalkToggledOn = message.GetBool();
+        playerInputState.DrawingBow = message.GetBool();
         return playerInputState;
     }
 }

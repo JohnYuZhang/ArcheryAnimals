@@ -54,8 +54,8 @@ public class PlayerAnimation : MonoBehaviour
         {
             CalculateBlendValue(_playerLocomotionInput.currentPlayerLocomotionState.MovementInput);
             UpdateAnimationState();
-            _lastActionState = _playerState.CurrentPlayerActionState;
         }
+        _lastActionState = _playerState.CurrentPlayerActionState;
     }
 
     public void CalculateBlendValue(Vector2 movementInput)
@@ -74,6 +74,7 @@ public class PlayerAnimation : MonoBehaviour
     }
 
     public void UpdateAnimationState() {
+        bool isIdlingLocomotion = _playerState.CurrentPlayerMovementState == PlayerMovementState.Idling;
         bool isIdling = _playerState.CurrentPlayerMovementState == PlayerMovementState.Idling;
         bool isRunning = _playerState.CurrentPlayerMovementState == PlayerMovementState.Running;
         bool isSprinting = _playerState.CurrentPlayerMovementState == PlayerMovementState.Sprinting;
@@ -87,11 +88,10 @@ public class PlayerAnimation : MonoBehaviour
         bool isChargingBow = _playerState.CurrentPlayerActionState == PlayerActionState.ChargingBow;
         bool isReleasingBow = _playerState.CurrentPlayerActionState == PlayerActionState.ReleasingBow;
         bool isPlayingAction = actionHashes.Any(hash => _animator.GetBool(hash));
-        
 
+        print(_playerState.CurrentPlayerActionState + " " + startChargingBow);
 
         _animator.SetBool(isGroundedHash, isGrounded);
-        _animator.SetBool(isIdlingLocomotionHash, isIdlingLocomotion);
         _animator.SetBool(isIdlingLocomotionHash, isIdlingLocomotion);
         _animator.SetBool(isFallingHash, isFalling);
         _animator.SetBool(isJumpingHash, isJumping);
@@ -107,7 +107,6 @@ public class PlayerAnimation : MonoBehaviour
         _animator.SetFloat(inputYHash, _currentBlendInput.y);
         _animator.SetFloat(inputMagnitudeHash, _currentBlendInput.magnitude);
         _animator.SetFloat(rotationMismatchHash, _playerController.RotationMismatch);
-
 
     }
 }

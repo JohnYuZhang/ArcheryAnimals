@@ -11,7 +11,7 @@ public class PlayerActionController : MonoBehaviour
 
     private PlayerActionInput _playerActionInput;
     private PlayerState _playerState;
-
+    private PlayerController _playerController;
     private PlayerActionState _lastActionState = PlayerActionState.Idling;
     #endregion
 
@@ -19,20 +19,24 @@ public class PlayerActionController : MonoBehaviour
     private void Awake() {
         _playerActionInput = GetComponent<PlayerActionInput>();
         _playerState = GetComponent<PlayerState>();
+        _playerController = GetComponent<PlayerController>();
     }
     #endregion
 
     #region Update Logic
     private void Update() {
-        UpdateActionState();
-        HandleAttackAction();
+        if (_playerController.isMainPlayer)
+        {
+            UpdateActionState(_playerActionInput.DrawingBow);
+            HandleAttackAction();
+        }
     }
 
-    private void UpdateActionState() {
+    public void UpdateActionState(bool drawingBow) {
         _lastActionState = _playerState.CurrentPlayerActionState;
 
-        bool isChargingBow = _playerActionInput.DrawingBow;
-        bool isReleasingBow = !_playerActionInput.DrawingBow && _lastActionState == PlayerActionState.ChargingBow;
+        bool isChargingBow = drawingBow;
+        bool isReleasingBow = !drawingBow && _lastActionState == PlayerActionState.ChargingBow;
 
         PlayerActionState actionState = isChargingBow ? PlayerActionState.ChargingBow :
                                         isReleasingBow ? PlayerActionState.ReleasingBow :
