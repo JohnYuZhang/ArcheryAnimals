@@ -207,6 +207,34 @@
                     "isPartOfComposite": false
                 }
             ]
+        },
+        {
+            "name": "PlayerActionMap",
+            "id": "9e45411f-7932-403c-a79b-6ea54efe7a37",
+            "actions": [
+                {
+                    "name": "DrawBow",
+                    "type": "Value",
+                    "id": "f82ea71e-1840-4352-afb6-e919e17856b9",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "8ec696b5-0ead-44ad-a22c-995dd8045174",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "DrawBow",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
         }
     ],
     "controlSchemes": []

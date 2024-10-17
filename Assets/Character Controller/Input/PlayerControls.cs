@@ -229,6 +229,34 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": false
                 }
             ]
+        },
+        {
+            ""name"": ""PlayerActionMap"",
+            ""id"": ""9e45411f-7932-403c-a79b-6ea54efe7a37"",
+            ""actions"": [
+                {
+                    ""name"": ""DrawBow"",
+                    ""type"": ""Value"",
+                    ""id"": ""f82ea71e-1840-4352-afb6-e919e17856b9"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": """",
+                    ""id"": ""8ec696b5-0ead-44ad-a22c-995dd8045174"",
+                    ""path"": ""<Mouse>/leftButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""DrawBow"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
         }
     ],
     ""controlSchemes"": []
@@ -240,6 +268,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         m_PlayerLocomotionMap_ToggleSprint = m_PlayerLocomotionMap.FindAction("ToggleSprint", throwIfNotFound: true);
         m_PlayerLocomotionMap_Jump = m_PlayerLocomotionMap.FindAction("Jump", throwIfNotFound: true);
         m_PlayerLocomotionMap_ToggleWalk = m_PlayerLocomotionMap.FindAction("ToggleWalk", throwIfNotFound: true);
+        // PlayerActionMap
+        m_PlayerActionMap = asset.FindActionMap("PlayerActionMap", throwIfNotFound: true);
+        m_PlayerActionMap_DrawBow = m_PlayerActionMap.FindAction("DrawBow", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -375,6 +406,52 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         }
     }
     public PlayerLocomotionMapActions @PlayerLocomotionMap => new PlayerLocomotionMapActions(this);
+
+    // PlayerActionMap
+    private readonly InputActionMap m_PlayerActionMap;
+    private List<IPlayerActionMapActions> m_PlayerActionMapActionsCallbackInterfaces = new List<IPlayerActionMapActions>();
+    private readonly InputAction m_PlayerActionMap_DrawBow;
+    public struct PlayerActionMapActions
+    {
+        private @PlayerControls m_Wrapper;
+        public PlayerActionMapActions(@PlayerControls wrapper) { m_Wrapper = wrapper; }
+        public InputAction @DrawBow => m_Wrapper.m_PlayerActionMap_DrawBow;
+        public InputActionMap Get() { return m_Wrapper.m_PlayerActionMap; }
+        public void Enable() { Get().Enable(); }
+        public void Disable() { Get().Disable(); }
+        public bool enabled => Get().enabled;
+        public static implicit operator InputActionMap(PlayerActionMapActions set) { return set.Get(); }
+        public void AddCallbacks(IPlayerActionMapActions instance)
+        {
+            if (instance == null || m_Wrapper.m_PlayerActionMapActionsCallbackInterfaces.Contains(instance)) return;
+            m_Wrapper.m_PlayerActionMapActionsCallbackInterfaces.Add(instance);
+            @DrawBow.started += instance.OnDrawBow;
+            @DrawBow.performed += instance.OnDrawBow;
+            @DrawBow.canceled += instance.OnDrawBow;
+        }
+
+        private void UnregisterCallbacks(IPlayerActionMapActions instance)
+        {
+            @DrawBow.started -= instance.OnDrawBow;
+            @DrawBow.performed -= instance.OnDrawBow;
+            @DrawBow.canceled -= instance.OnDrawBow;
+        }
+
+        public void RemoveCallbacks(IPlayerActionMapActions instance)
+        {
+            if (m_Wrapper.m_PlayerActionMapActionsCallbackInterfaces.Remove(instance))
+                UnregisterCallbacks(instance);
+        }
+
+        public void SetCallbacks(IPlayerActionMapActions instance)
+        {
+            foreach (var item in m_Wrapper.m_PlayerActionMapActionsCallbackInterfaces)
+                UnregisterCallbacks(item);
+            m_Wrapper.m_PlayerActionMapActionsCallbackInterfaces.Clear();
+            AddCallbacks(instance);
+        }
+    }
+    public PlayerActionMapActions @PlayerActionMap => new PlayerActionMapActions(this);
     public interface IPlayerLocomotionMapActions
     {
         void OnMovement(InputAction.CallbackContext context);
@@ -382,5 +459,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         void OnToggleSprint(InputAction.CallbackContext context);
         void OnJump(InputAction.CallbackContext context);
         void OnToggleWalk(InputAction.CallbackContext context);
+    }
+    public interface IPlayerActionMapActions
+    {
+        void OnDrawBow(InputAction.CallbackContext context);
     }
 }
