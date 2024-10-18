@@ -6,7 +6,7 @@ using UnityEngine;
 using FishNet.Connection;
 using FishNet.Object;
 using FishNet.Example.ColliderRollbacks;
-using Cinemachine;
+using Unity.Cinemachine;
 
 [DefaultExecutionOrder(-1)]
 public class PlayerController : NetworkBehaviour
