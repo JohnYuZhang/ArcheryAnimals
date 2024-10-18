@@ -3,14 +3,18 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using FishNet.Connection;
+using FishNet.Object;
+using FishNet.Example.ColliderRollbacks;
+using Cinemachine;
 
 [DefaultExecutionOrder(-1)]
-public class PlayerController : MonoBehaviour
+public class PlayerController : NetworkBehaviour
 {
     #region Class Variables
     [Header("Components")]
-    [SerializeField] private CharacterController _characterController;
-    [SerializeField] private Camera _playerCamera;
+    private CharacterController _characterController;
+    private Camera _playerCamera;
     public float RotationMismatch { get; private set; } = 0f;
     public bool IsRotatingToTarget { get; private set; } = false;
 
@@ -60,10 +64,35 @@ public class PlayerController : MonoBehaviour
     #endregion
 
     #region Startup
+
+    public override void OnStartClient() {
+        base.OnStartClient();
+        if (!base.IsOwner) {
+            GetComponent<PlayerController>().enabled = false;
+
+        }
+        
+        print(_characterController);
+        
+        
+
+
+
+
+
+    }
     private void Awake() {
+        _characterController = GetComponent<CharacterController>();
+        _playerCamera = Camera.main;
+        CinemachineVirtualCamera vc = GameObject.FindObjectOfType<CinemachineVirtualCamera>();
+        if (vc != null) {
+            vc.Follow = transform;
+            vc.LookAt = transform;
+        } else {
+            Debug.LogError("Cinemachine Virtual Camera component not found on the main camera.");
+        }
         _playerLocomotionInput = GetComponent<PlayerLocomotionInput>();
         _playerState = GetComponent<PlayerState>();
-
         _antiBump = sprintSpeed;
         _stepOffSet = _characterController.stepOffset;
     }
@@ -77,6 +106,7 @@ public class PlayerController : MonoBehaviour
         HandleVerticalMovement();
         // Lateral movement needs to be last because it handles the move call
         HandleLateralMovement();
+        UpdateCameraRotation();
     }
 
     private void UpdateMovementState() {
@@ -181,7 +211,7 @@ public class PlayerController : MonoBehaviour
     }
     // Camera logic is recomended to happen after movement because it tracks latest player position, makes the camera smoother and reduces jitter etc.
     private void LateUpdate() {
-        UpdateCameraRotation();
+        
     }
 
     private void UpdateCameraRotation() {
