@@ -14,7 +14,7 @@ public class PlayerController : NetworkBehaviour
     #region Class Variables
     [Header("Components")]
     private CharacterController _characterController;
-    private Camera _playerCamera;
+    [SerializeField] private CinemachineCamera _playerCamera;
     public float RotationMismatch { get; private set; } = 0f;
     public bool IsRotatingToTarget { get; private set; } = false;
 
@@ -69,28 +69,13 @@ public class PlayerController : NetworkBehaviour
         base.OnStartClient();
         if (!base.IsOwner) {
             GetComponent<PlayerController>().enabled = false;
-
+            FindAnyObjectByType<CinemachineCamera>();
         }
-        
-        print(_characterController);
-        
-        
-
-
-
-
-
     }
     private void Awake() {
         _characterController = GetComponent<CharacterController>();
-        _playerCamera = Camera.main;
-        CinemachineVirtualCamera vc = GameObject.FindObjectOfType<CinemachineVirtualCamera>();
-        if (vc != null) {
-            vc.Follow = transform;
-            vc.LookAt = transform;
-        } else {
-            Debug.LogError("Cinemachine Virtual Camera component not found on the main camera.");
-        }
+        //_playerCamera.Target = transform;
+        //_playerCamera.LookAt = transform;
         _playerLocomotionInput = GetComponent<PlayerLocomotionInput>();
         _playerState = GetComponent<PlayerState>();
         _antiBump = sprintSpeed;
