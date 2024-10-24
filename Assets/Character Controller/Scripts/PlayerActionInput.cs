@@ -2,9 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
-
-[DefaultExecutionOrder(-2)]
-public class PlayerActionInput : MonoBehaviour, PlayerControls.IPlayerActionMapActions
+using FishNet.Connection;
+using FishNet.Object;
+public class PlayerActionInput : NetworkBehaviour, PlayerControls.IPlayerActionMapActions
 {
 
     #region Class Variables
@@ -13,6 +13,14 @@ public class PlayerActionInput : MonoBehaviour, PlayerControls.IPlayerActionMapA
     #endregion
 
     #region Startup
+    public override void OnStartClient() {
+        base.OnStartClient();
+        if (base.IsOwner) {
+
+        } else {
+            gameObject.GetComponent<PlayerActionInput>().enabled = false;
+        }
+    }
     private void OnEnable() {
         PlayerControls = new PlayerControls();
         PlayerControls.Enable();

@@ -2,9 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using FishNet.Connection;
+using FishNet.Object;
 
-[DefaultExecutionOrder(-2)]
-public class PlayerLocomotionInput : MonoBehaviour, PlayerControls.IPlayerLocomotionMapActions
+public class PlayerLocomotionInput : NetworkBehaviour, PlayerControls.IPlayerLocomotionMapActions
 {
 
     #region Class Variables
@@ -20,6 +21,14 @@ public class PlayerLocomotionInput : MonoBehaviour, PlayerControls.IPlayerLocomo
     #endregion
 
     #region Startup
+    public override void OnStartClient() {
+        base.OnStartClient();
+        if (base.IsOwner) {
+
+        } else {
+            gameObject.GetComponent<PlayerLocomotionInput>().enabled = false;
+        }
+    }
     private void OnEnable() {
         PlayerControls = new PlayerControls();
         PlayerControls.Enable();

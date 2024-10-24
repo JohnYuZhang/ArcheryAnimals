@@ -2,8 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
-public class PlayerActionController : MonoBehaviour
+using FishNet.Connection;
+using FishNet.Object;
+public class PlayerActionController : NetworkBehaviour 
 {
     #region Class Variables
     [Header("Components")]
@@ -16,6 +17,14 @@ public class PlayerActionController : MonoBehaviour
     #endregion
 
     #region Startup
+    public override void OnStartClient() {
+        base.OnStartClient();
+        if (base.IsOwner) {
+
+        } else {
+            gameObject.GetComponent<PlayerActionController>().enabled = false;
+        }
+    }
     private void Awake() {
         _playerActionInput = GetComponent<PlayerActionInput>();
         _playerState = GetComponent<PlayerState>();
