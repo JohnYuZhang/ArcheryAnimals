@@ -14,7 +14,7 @@ public class PlayerController : NetworkBehaviour
     #region Class Variables
     [Header("Components")]
     private CharacterController _characterController;
-    [SerializeField] private CinemachineCamera _playerCamera;
+    private Camera _playerCamera;
     public float RotationMismatch { get; private set; } = 0f;
     public bool IsRotatingToTarget { get; private set; } = false;
 
@@ -69,17 +69,22 @@ public class PlayerController : NetworkBehaviour
         base.OnStartClient();
         if (!base.IsOwner) {
             GetComponent<PlayerController>().enabled = false;
-            FindAnyObjectByType<CinemachineCamera>();
+
         }
+
     }
     private void Awake() {
+
         _characterController = GetComponent<CharacterController>();
-        //_playerCamera.Target = transform;
-        //_playerCamera.LookAt = transform;
+        _playerCamera = Camera.main;
+        CinemachineCamera cam = GameObject.Find("FreeLook Camera").GetComponent<CinemachineCamera>();
+        cam.Follow = transform;
+        cam.LookAt = transform;
         _playerLocomotionInput = GetComponent<PlayerLocomotionInput>();
         _playerState = GetComponent<PlayerState>();
         _antiBump = sprintSpeed;
         _stepOffSet = _characterController.stepOffset;
+
     }
 
     #endregion
