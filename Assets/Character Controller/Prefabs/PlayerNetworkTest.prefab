@@ -122,7 +122,7 @@ GameObject:
   - component: {fileID: 931877402157413215}
   - component: {fileID: 8718908833008789104}
   m_Layer: 0
-  m_Name: PlayerNetwork
+  m_Name: PlayerNetworkTest
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

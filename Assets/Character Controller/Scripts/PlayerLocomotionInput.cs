@@ -5,7 +5,6 @@ using UnityEngine.InputSystem;
 using FishNet.Connection;
 using FishNet.Object;
 
-[DefaultExecutionOrder(-2)]
 public class PlayerLocomotionInput : NetworkBehaviour, PlayerControls.IPlayerLocomotionMapActions
 {
 

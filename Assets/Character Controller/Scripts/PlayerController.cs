@@ -8,13 +8,14 @@ using FishNet.Object;
 using FishNet.Example.ColliderRollbacks;
 using Unity.Cinemachine;
 
-[DefaultExecutionOrder(-1)]
+
 public class PlayerController : NetworkBehaviour
 {
     #region Class Variables
     [Header("Components")]
     private CharacterController _characterController;
-    private Camera _playerCamera;
+    [SerializeField] private GameObject _playerCameraTarget;
+
     public float RotationMismatch { get; private set; } = 0f;
     public bool IsRotatingToTarget { get; private set; } = false;
 
@@ -70,16 +71,15 @@ public class PlayerController : NetworkBehaviour
         if (!base.IsOwner) {
             GetComponent<PlayerController>().enabled = false;
 
+        } else {
+            PlayerCamera.GetPlayerCamera().Follow = _playerCameraTarget.transform;
+            PlayerCamera.GetPlayerCamera().LookAt = _playerCameraTarget.transform;
         }
 
     }
     private void Awake() {
 
         _characterController = GetComponent<CharacterController>();
-        _playerCamera = Camera.main;
-        CinemachineCamera cam = GameObject.Find("FreeLook Camera").GetComponent<CinemachineCamera>();
-        cam.Follow = transform;
-        cam.LookAt = transform;
         _playerLocomotionInput = GetComponent<PlayerLocomotionInput>();
         _playerState = GetComponent<PlayerState>();
         _antiBump = sprintSpeed;
@@ -167,8 +167,8 @@ public class PlayerController : NetworkBehaviour
                                       isSprinting ? sprintSpeed : runSpeed;
         
         // Determine direction
-        Vector3 cameraForwardXZ = new Vector3(_playerCamera.transform.forward.x, 0f, _playerCamera.transform.forward.z).normalized;
-        Vector3 cameraRightXZ = new Vector3(_playerCamera.transform.right.x, 0f, _playerCamera.transform.right.z).normalized;
+        Vector3 cameraForwardXZ = new Vector3(_playerCameraTarget.transform.forward.x, 0f, _playerCameraTarget.transform.forward.z).normalized;
+        Vector3 cameraRightXZ = new Vector3(_playerCameraTarget.transform.right.x, 0f, _playerCameraTarget.transform.right.z).normalized;
         Vector3 movementDirection = cameraRightXZ * _playerLocomotionInput.MovementInput.x + cameraForwardXZ * _playerLocomotionInput.MovementInput.y;
 
         // Review time.deltatime?
@@ -227,11 +227,10 @@ public class PlayerController : NetworkBehaviour
             UpdateIdleRotation(rotationTolerance);
         }
 
-        _playerCamera.transform.rotation = Quaternion.Euler(_cameraRotation.y, _cameraRotation.x, 0f);
-
+        _playerCameraTarget.transform.rotation = Quaternion.Euler(_cameraRotation.y, _cameraRotation.x, 0f);
         // Get angle between camera and player
         // Review Linear Alg
-        Vector3 camForwardProjectedXZ = new Vector3(_playerCamera.transform.forward.x, 0f, _playerCamera.transform.forward.z).normalized;
+        Vector3 camForwardProjectedXZ = new Vector3(_playerCameraTarget.transform.forward.x, 0f, _playerCameraTarget.transform.forward.z).normalized;
         Vector3 crossProduct = Vector3.Cross(transform.forward, camForwardProjectedXZ);
         float sign = Mathf.Sign(Vector3.Dot(crossProduct, transform.up));
         RotationMismatch = sign * Vector3.Angle(transform.forward, camForwardProjectedXZ); 
